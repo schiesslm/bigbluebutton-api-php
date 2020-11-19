@@ -59,13 +59,37 @@ class BigBlueButton
     protected $bbbServerBaseUrl;
     protected $urlBuilder;
     protected $jSessionId;
+    protected $timeout;
 
-    public function __construct()
+    /**
+     * @param string $baseUrl Base url of the BBB server. If empty, the environment vars will be used.
+     * @param string $secret  BBB server secret. If empty, the environment vars will be used.
+     * @param int    $timeout Connect timeout for cURL calls. Defaults to 5 seconds.
+     */
+    public function __construct(string $baseUrl = '', string $secret = '', int $timeout = 10)
     {
-        // Keeping backward compatibility with older deployed versions
-        $this->securitySecret   = (getenv('BBB_SECURITY_SALT') === false) ? getenv('BBB_SECRET') : $this->securitySecret = getenv('BBB_SECURITY_SALT');
-        $this->bbbServerBaseUrl = getenv('BBB_SERVER_BASE_URL');
-        $this->urlBuilder       = new UrlBuilder($this->securitySecret, $this->bbbServerBaseUrl);
+        // We are NOT calling the parent constructor here, because the
+        // only thing it does is getting the url/secret from the env vars
+        // and initialize the UrlBuilder
+        // This is exactly were we want to kick in and replace it
+
+        if ((trim($baseUrl) !== '') && (trim($secret) !== '')) {
+            // We got valid url/secret from parameters
+            $this->securitySecret = trim($secret);
+            $this->bbbServerBaseUrl = trim($baseUrl);
+        } else {
+            // We don't have valid url/secret from parameters
+            // So we just continue in a backwards compatible way...
+
+            // Keeping backward compatibility with older deployed versions
+            $this->securitySecret = (getenv('BBB_SECURITY_SALT') === false) ? getenv('BBB_SECRET') : $this->securitySecret = getenv('BBB_SECURITY_SALT');
+            $this->bbbServerBaseUrl = getenv('BBB_SERVER_BASE_URL');
+        }
+        $this->urlBuilder = new UrlBuilder($this->securitySecret, $this->bbbServerBaseUrl);
+
+        //Store the timout parameter to be used in processXmlResponse method instead of hard coded value
+        //Limit the timeout to positive values
+        $this->timeout = max(0, $timeout);
     }
 
     /**
@@ -451,7 +475,6 @@ class BigBlueButton
             if (!$ch) {
                 throw new \RuntimeException('Unhandled curl error: ' . curl_error($ch));
             }
-            $timeout = 10;
 
             // Needed to store the JSESSIONID
             $cookiefile     = tmpfile();
@@ -462,7 +485,7 @@ class BigBlueButton
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeout);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookiefilepath);
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookiefilepath);
             if (!empty($payload)) {
