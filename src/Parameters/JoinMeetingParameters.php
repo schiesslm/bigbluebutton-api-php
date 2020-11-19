@@ -84,6 +84,11 @@ class JoinMeetingParameters extends UserDataParameters
     private $customParameters;
 
     /**
+     * @var boolean
+     */
+    private $guest;
+
+    /**
      * JoinMeetingParametersTest constructor.
      *
      * @param $meetingId
@@ -314,6 +319,18 @@ class JoinMeetingParameters extends UserDataParameters
     }
 
     /**
+     * @param bool $guest
+     *
+     * @return JoinMeetingParameters
+     */
+    public function setGuest(bool $guest)
+    {
+        $this->guest = $guest;
+
+        return $this;
+    }
+
+    /**
      * @param  string $paramName
      * @param  string $paramValue
      * @return JoinMeetingParameters
@@ -344,9 +361,15 @@ class JoinMeetingParameters extends UserDataParameters
             'clientURL'    => $this->clientURL
         ];
 
-        foreach( $this->customParameters as $key => $value ) {
-            $queries[$key] = $value;
+        if ($this->guest) {
+            //API doc says not to include this param unless it is true
+            $queries['guest'] = 'true';
         }
+
+        //Include all custom parameters in the query string, but make sure
+        //they are not overriding those parameters that we have getters/setters 
+        //for to avoid unexpected results.
+        $queries = array_replace($this->customParameters, $queries);
 
         $this->buildUserData($queries);
 
