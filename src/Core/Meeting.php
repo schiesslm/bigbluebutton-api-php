@@ -147,6 +147,11 @@ class Meeting
     private $attendees;
 
     /**
+     * @var bool    $isBreakout
+     */
+    private $isBreakout = false;
+
+    /**
      * @var array
      */
     private $metas;
@@ -180,6 +185,7 @@ class Meeting
         $this->endTime               = (float) $xml->endTime;
         $this->maxUsers              = (int) $xml->maxUsers->__toString();
         $this->moderatorCount        = (int) $xml->moderatorCount->__toString();
+        $this->isBreakout            = $xml->isBreakout->__toString() === 'true';
     }
 
     /**
@@ -371,6 +377,13 @@ class Meeting
         }
 
         return $this->attendees;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBreakout() {
+        return $this->isBreakout;
     }
 
     /**
