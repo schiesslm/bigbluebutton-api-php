@@ -1,11 +1,12 @@
 {
-  "name": "bigbluebutton/bigbluebutton-api-php",
+  "name": "schiesslm/bigbluebutton-api-php",
   "type": "library",
-  "description": "BigBlueButton PHP API Library for PHP",
+  "description": "BigBlueButton PHP API Library for PHP (fork)",
   "keywords": [
     "bigbluebutton",
     "bbb",
-    "api"
+    "api",
+    "vicole"
   ],
   "homepage": "http://bigbluebutton.org/",
   "license": "GPL-3.0",
@@ -13,6 +14,11 @@
     {
       "name": "Ghazi Triki",
       "email": "ghazi.nocturne@gmail.com",
+      "role": "Developer"
+    },
+    {
+      "name": "Michael Schie\u00dfl",
+      "email": "michael.schiessl@liongate.de",
       "role": "Developer"
     }
   ],
@@ -23,13 +29,13 @@
     }
   },
   "require": {
-    "php": ">=5.4",
+    "php": ">=7.2",
     "ext-curl": "*",
     "ext-simplexml": "*",
     "ext-mbstring": "*"
   },
   "require-dev": {
-    "php": ">=7.0",
+    "php": ">=7.7",
     "ext-mbstring": "*",
     "composer/composer": "1.7.*@dev",
     "phpunit/phpunit": "6.*",
