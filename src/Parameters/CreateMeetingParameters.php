@@ -23,6 +23,11 @@ namespace BigBlueButton\Parameters;
  */
 class CreateMeetingParameters extends MetaParameters
 {
+    const ALWAYS_ACCEPT      = 'ALWAYS_ACCEPT';
+    const ALWAYS_DENY        = 'ALWAYS_DENY';
+    const ASK_MODERATOR      = 'ASK_MODERATOR';
+    const ALWAYS_ACCEPT_AUTH = 'ALWAYS_ACCEPT_AUTH';
+
     /**
      * @var string
      */
@@ -192,6 +197,11 @@ class CreateMeetingParameters extends MetaParameters
      * @var boolean
      */
     private $freeJoin;
+
+    /**
+     * @var string
+     */
+    private $guestPolicy = null;
 
     /**
      * CreateMeetingParameters constructor.
@@ -927,6 +937,39 @@ class CreateMeetingParameters extends MetaParameters
     }
 
     /**
+     * Get the currently configured guest policy
+     */
+    public function getGuestPolicy()
+    {
+        return $this->guestPolicy;
+    }
+
+    /**
+     * Set the guest policy to one of the allowed policies.
+     * In case of an invalid policy parameter, will silently set the policy 
+     * to null and thus cause the meeting to use the server's default.
+     * The guest policy parameter string is case-insensitive.
+     * 
+     * @param string $guestPolicy
+     * @return CreateMeetingParameters
+     */
+    public function setGuestPolicy(string $guestPolicy)
+    {
+        $guestPolicy = strtoupper($guestPolicy);
+        if (
+            $guestPolicy === self::ALWAYS_ACCEPT
+            || $guestPolicy === self::ALWAYS_ACCEPT_AUTH
+            || $guestPolicy === self::ALWAYS_DENY
+            || $guestPolicy === self::ASK_MODERATOR
+        ) {
+            $this->guestPolicy = $guestPolicy;
+        } else {
+            $this->guestPolicy = null;
+        }
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getHTTPQuery()
@@ -962,6 +1005,12 @@ class CreateMeetingParameters extends MetaParameters
             'lockSettingsLockOnJoinConfigurable' => $this->isLockSettingsLockOnJoinConfigurable() ? 'true' : 'false',
             'allowModsToUnmuteUsers'             => $this->isAllowModsToUnmuteUsers() ? 'true' : 'false',
         ];
+
+        //Add guest policy parameter in case it is not null.
+        //Leaving it out in case of null will cause the server to use its configured default.
+        if (!is_null($this->guestPolicy)) {
+            $queries['guestPolicy'] = $this->guestPolicy;
+        }
 
         // Add breakout rooms parameters only if the meeting is a breakout room
         if ($this->isBreakout()) {
